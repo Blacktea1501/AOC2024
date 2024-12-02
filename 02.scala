@@ -11,10 +11,11 @@ def allDifferencesInRange(arr: Array[Int], min: Int, max: Int): Boolean = {
 }
 
 def tryRemoveLevel(report: Array[Int]): Boolean = {
-  report.indices.exists { i =>
-    val newReport = report.take(i) ++ report.drop(i + 1)
-    (allIncreasing(newReport) || allDecreasing(newReport)) && allDifferencesInRange(newReport, 1, 3)
-  }
+  report.indices.exists { i => check(report.take(i) ++ report.drop(i + 1)) }
+}
+
+def check(report: Array[Int]): Boolean = {
+  (allIncreasing(report) || allDecreasing(report)) && allDifferencesInRange(report, 1, 3)
 }
 
 def parse(filename: String): Array[Array[Int]] = {
@@ -24,22 +25,13 @@ def parse(filename: String): Array[Array[Int]] = {
 
 def part1(reports: Array[Array[Int]]): Unit = {
   var safeReports = 0
-  reports.foreach { report =>
-    if ((allIncreasing(report) || allDecreasing(report)) && allDifferencesInRange(report, 1, 3)) { safeReports += 1 }
-  }
+  reports.foreach { report => if (check(report)) { safeReports += 1 } }
   println(s"Safe reports: $safeReports")
 }
 
 def part2(reports: Array[Array[Int]]): Unit = {
   var safeReports = 0
-
-  reports.foreach { report =>
-    (allIncreasing(report) || allDecreasing(report)) && allDifferencesInRange(report, 1, 3) match {
-      case true  => safeReports += 1
-      case false => if tryRemoveLevel(report) then safeReports += 1
-    }
-  }
-
+  reports.foreach { report => if (check(report) || tryRemoveLevel(report)) { safeReports += 1 } }
   println(s"Safe reports: $safeReports")
 }
 
