@@ -1,43 +1,28 @@
-def allIncreasing(arr: Array[Int]): Boolean = {
-  arr.sliding(2).forall { case Array(a, b) => a < b }
+def allOrdered(arr: Array[Int], comp: (Int, Int) => Boolean): Boolean = {
+  arr.sliding(2).forall { case Array(a, b) => comp(a, b) }
 }
 
-def allDecreasing(arr: Array[Int]): Boolean = {
-  arr.sliding(2).forall { case Array(a, b) => a > b }
-}
-
-def allDifferencesInRange(arr: Array[Int], min: Int, max: Int): Boolean = {
-  arr.sliding(2).forall { case Array(a, b) => (a - b).abs >= min && (a - b).abs <= max }
+def allDifferencesInRange(arr: Array[Int]): Boolean = {
+  arr.sliding(2).forall { case Array(a, b) => (a - b).abs >= 1 && (a - b).abs <= 3 }
 }
 
 def tryRemoveLevel(report: Array[Int]): Boolean = {
-  report.indices.exists { i => check(report.take(i) ++ report.drop(i + 1)) }
+  report.indices.exists(i => check(report.take(i) ++ report.drop(i + 1)))
 }
 
 def check(report: Array[Int]): Boolean = {
-  (allIncreasing(report) || allDecreasing(report)) && allDifferencesInRange(report, 1, 3)
+  (allOrdered(report, _ < _) || allOrdered(report, _ > _)) && allDifferencesInRange(report)
 }
 
-def parse(filename: String): Array[Array[Int]] = {
-  val input = scala.io.Source.fromFile(filename).mkString
-  input.split("\n").map(line => line.split(" ").map(_.toInt))
-}
-
-def part1(reports: Array[Array[Int]]): Unit = {
-  var safeReports = 0
-  reports.foreach { report => if (check(report)) { safeReports += 1 } }
-  println(s"Safe reports: $safeReports")
-}
+def part1(reports: Array[Array[Int]]): Unit = { println(reports.count(check)) }
 
 def part2(reports: Array[Array[Int]]): Unit = {
-  var safeReports = 0
-  reports.foreach { report => if (check(report) || tryRemoveLevel(report)) { safeReports += 1 } }
-  println(s"Safe reports: $safeReports")
+  println(reports.foldLeft(0)((acc, report) => if (check(report) || tryRemoveLevel(report)) acc + 1 else acc))
 }
 
 @main
 def main(): Unit = {
-  val reports = parse("input2.txt")
+  val reports = scala.io.Source.fromFile("input2.txt").mkString.split("\n").map(line => line.split(" ").map(_.toInt))
   part1(reports)
   part2(reports)
 }

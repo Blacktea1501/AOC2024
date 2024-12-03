@@ -9,7 +9,7 @@ def part1(s: String): Unit = { println(solve(mul.findAllMatchIn(s))) }
 
 def part2(s: String): Unit = { println(solve(mul.findAllMatchIn(s.replaceAll(rep.regex, "")))) }
 
-def solve(x: Iterator[Match]): Int = { x.map { m => m.group(1).toInt * m.group(2).toInt }.sum }
+def solve(x: Iterator[Match]): Int = { x.map(m => m.group(1).toInt * m.group(2).toInt).sum }
 
 @main
 def main(): Unit = {
