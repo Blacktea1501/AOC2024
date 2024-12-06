@@ -1,5 +1,4 @@
 import scala.collection.mutable.HashMap as Map
-
 val regex = """\^|<|v|>""".r
 
 def parse(fileName: String): (Array[String], Int, Int, Char) = {
@@ -18,28 +17,29 @@ def parse(fileName: String): (Array[String], Int, Int, Char) = {
   (lines, x, y, dir)
 }
 
-def part1(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Unit = { println(move(_lines, _x, _y, _dir)) }
+def part1(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Unit = { println(move(_lines, _x, _y, _dir)(0)) }
 
 def part2(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Unit = {
+  var (_, path) = move(_lines, _x, _y, _dir)
   var count = 0
-  _lines.foreach(line => {
+  path.foreach(line => {
     line.indices.foreach(i => {
-      if (line(i) == '.') {
-        val newInput = _lines.updated(_lines.indexOf(line), line.updated(i, '#'))
-        if (move(newInput, _x, _y, _dir) == -1) { count += 1 }
+      if (line(i) == 'X') {
+        val newInput = path.updated(path.indexOf(line), line.updated(i, '#')) 
+        if (move(newInput, _x, _y, _dir)(0) == -1) { count += 1 }
       }
     })
   })
   println(count)
 }
 
-def move(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Int = {
+def move(_lines: Array[String], _x: Int, _y: Int, _dir: Char): (Int, Array[String]) = {
   var (lines, x, y, dir) = (_lines, _x, _y, _dir)
   var map   = Map[(Int, Int), Int]().withDefaultValue(0)
   val (height, length) = (lines.length, lines(0).length)
   while (x >= 0 && x < length && y >= 0 && y < height) {
     map((x, y)) += 1
-    if (map((x, y)) == 5) { return -1 }
+    if (map((x, y)) == 5) { return (-1, lines) }
     if (lines(y)(x) != '#') { lines = lines.updated(y, lines(y).updated(x, 'X')) }
     if (lines(y)(x) == '#') {
       dir match {
@@ -58,7 +58,7 @@ def move(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Int = {
     }
   }
 
-  return lines.map(row => row.count(_ == 'X')).sum
+  return (lines.map(row => row.count(_ == 'X')).sum, lines)
 }
 
 @main
