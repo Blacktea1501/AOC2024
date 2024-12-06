@@ -1,85 +1,69 @@
-class Maze(l: List[String]) {
+import scala.collection.mutable.HashMap as Map
 
-  private var maze = l
+val regex = """\^|<|v|>""".r
 
-  def move(xx: Int, yy: Int, dirr: Char): Int = {
-    var (x, y, dir) = (xx, yy, dirr)
-    val height      = maze.length
-    val length      = maze(0).length
-    var steps       = 0
+def parse(fileName: String): (Array[String], Int, Int, Char) = {
+  val lines = scala.io.Source.fromFile(fileName).mkString.split("\n")
+  var (x, y, dir) = (0, 0, ' ')
 
-    while (x >= 0 && x < length && y >= 0 && y < height) {
-      if (steps > (height * length) * 0.35) { return -1 }
-      if (maze(y)(x) != '#') { maze = maze.updated(y, maze(y).updated(x, 'X')) }
-
-      if (maze(y)(x) == '#') {
-        dir match {
-          case '>' => x -= 1; dir = 'v'
-          case '^' => y += 1; dir = '>'
-          case 'v' => y -= 1; dir = '<'
-          case '<' => x += 1; dir = '^'
-        }
-      } else {
-        dir match {
-          case '^' => y -= 1
-          case '>' => x += 1
-          case 'v' => y += 1
-          case '<' => x -= 1
-        }
-      }
-      // code for terminal visualization
-      // maze.foreach(println)
-      // Thread.sleep(100)
-      // // clear screen
-      // print("\u001b[H\u001b[2J")
-      steps += 1
-    }
-    return maze.map(row => row.count(_ == 'X')).sum
-  }
-
-}
-
-def parse(): (List[String], Int, Int, Char) = {
-  var input = scala.io.Source.fromFile("input6.txt").getLines().toList
-  var x     = 0
-  var y     = 0
-  var dir   = ' '
-  input.foreach(line => {
+  lines.foreach(line => {
     val m = regex.findAllIn(line).toList
     if (m.length > 0) {
       dir = m(0)(0)
       x = line.indexOf(m(0))
-      y = input.indexOf(line)
+      y = lines.indexOf(line)
     }
   })
-  (input, x, y, dir)
+
+  (lines, x, y, dir)
 }
 
-val regex = """\^|<|v|>""".r
+def part1(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Unit = { println(move(_lines, _x, _y, _dir)) }
 
-def part1(input: List[String], x: Int, y: Int, dir: Char): Unit = {
-  val maze = new Maze(input)
-  println(maze.move(x, y, dir))
-}
-
-def part2(input: List[String], x: Int, y: Int, dir: Char): Unit = {
+def part2(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Unit = {
   var count = 0
-  input.foreach(line => {
+  _lines.foreach(line => {
     line.indices.foreach(i => {
       if (line(i) == '.') {
-        val newInput = input.updated(input.indexOf(line), line.updated(i, '#'))
-        val maze     = new Maze(newInput)
-        val res      = maze.move(x, y, dir)
-        if (res == -1) { count += 1 }
+        val newInput = _lines.updated(_lines.indexOf(line), line.updated(i, '#'))
+        if (move(newInput, _x, _y, _dir) == -1) { count += 1 }
       }
     })
   })
   println(count)
 }
 
+def move(_lines: Array[String], _x: Int, _y: Int, _dir: Char): Int = {
+  var (lines, x, y, dir) = (_lines, _x, _y, _dir)
+  var map   = Map[(Int, Int), Int]().withDefaultValue(0)
+  val (height, length) = (lines.length, lines(0).length)
+  while (x >= 0 && x < length && y >= 0 && y < height) {
+    map((x, y)) += 1
+    if (map((x, y)) == 5) { return -1 }
+    if (lines(y)(x) != '#') { lines = lines.updated(y, lines(y).updated(x, 'X')) }
+    if (lines(y)(x) == '#') {
+      dir match {
+        case '>' => x -= 1; dir = 'v'
+        case '^' => y += 1; dir = '>'
+        case 'v' => y -= 1; dir = '<'
+        case '<' => x += 1; dir = '^'
+      }
+    } else {
+      dir match {
+        case '^' => y -= 1
+        case '>' => x += 1
+        case 'v' => y += 1
+        case '<' => x -= 1
+      }
+    }
+  }
+
+  return lines.map(row => row.count(_ == 'X')).sum
+}
+
 @main
 def main(): Unit = {
-  var (input, x, y, dir) = parse()
-  part1(input, x, y, dir)
-  part2(input, x, y, dir)
+  var (lines, x, y, dir) = parse("input6.txt")
+  part1(lines, x, y, dir)
+  part2(lines, x, y, dir)
 }
